@@ -11,7 +11,7 @@ def group_days(attendance_row):
 
     for day in range(1, 32):
         status = str(attendance_row.get(str(day), "")).strip().upper()
-        if status in ["P", "A", "WO"]:
+        if status in ["P"]:
             if start is None:
                 start = day
                 last_status = status
