@@ -140,12 +140,11 @@ if uploaded_file:
             st.warning("⚠️ No data to export. Please check your input file.")
 
 # === 📄 Sample Template ===
-# === 📄 Sample Template ===
 st.markdown("---")
 st.markdown("### 📄 Need a sample file?")
 
 try:
-    with open("Supaul Region Attendance Tracker May.xlsx", "rb") as f:
+    with open("Sample.xlsx", "rb") as f:
         sample_bytes = f.read()
         sample_file = BytesIO(sample_bytes)
 
