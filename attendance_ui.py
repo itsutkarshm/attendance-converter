@@ -30,7 +30,7 @@ def group_days(attendance_row, status_filter):
         ranges.append((start, 31, last_status))
     return ranges
 
-def convert_attendance_excel(file, shift_value, reason_value, explanation_value):
+def convert_attendance_excel(file, shift_value, reason_value, explanation_value, month_value):
     df = pd.read_excel(file, dtype=str)
     df.columns = df.columns.map(lambda x: str(x).strip())
 
@@ -60,8 +60,8 @@ def convert_attendance_excel(file, shift_value, reason_value, explanation_value)
         for start_day, end_day, status in present_ranges:
             output_rows.append({
                 "Employee": emp_id,
-                "From Date": f"{start_day:02d}-05-2025",
-                "To Date": f"{end_day:02d}-05-2025",
+                "From Date": f"{start_day:02d}-{month_value}-2025",
+                "To Date": f"{end_day:02d}-{month_value}-2025",
                 "Holiday": 0,
                 "Shift": shift_value,
                 "Reason": reason_value,
@@ -74,13 +74,14 @@ def convert_attendance_excel(file, shift_value, reason_value, explanation_value)
             leave_rows.append({
                 "Company": "AWOKE India Foundation",
                 "Employee": emp_id,
-                "From Date": f"2025-05-{start_day:02d} 00:00:00",
-                "To Date": f"2025-05-{end_day:02d} 00:00:00",
+                "From Date": f"2025-{month_value}-{start_day:02d} 00:00:00",
+                "To Date": f"2025-{month_value}-{end_day:02d} 00:00:00",
                 "Leave Type": "Casual Leave",
                 "Status": "Approved"
             })
 
     return pd.DataFrame(output_rows), pd.DataFrame(present_summary), pd.DataFrame(leave_rows)
+
 
 # === STREAMLIT UI ===
 
@@ -89,14 +90,37 @@ st.title("📊 Attendance Tracker → Bulk Update Format Converter")
 
 uploaded_file = st.file_uploader("📥 Upload Attendance Tracker Excel File", type=["xlsx"])
 
+# === Month Dropdown ===
+st.markdown("### 📅 Select Attendance Month")
+month_options = {
+    "January": "01",
+    "February": "02",
+    "March": "03",
+    "April": "04",
+    "May": "05",
+    "June": "06",
+    "July": "07",
+    "August": "08",
+    "September": "09",
+    "October": "10",
+    "November": "11",
+    "December": "12"
+}
+selected_month_name = st.selectbox("Month", list(month_options.keys()), index=4)  # Default to May
+selected_month = month_options[selected_month_name]
+
+# === Other Settings ===
 st.markdown("### ⚙️ Conversion Settings")
 shift_value = st.text_input("Shift Name", value="CFL Day")
 reason_value = st.selectbox("Reason", options=["On Duty", "Work From Home"], index=0)
 explanation_value = st.text_input("Explanation", value="Bulk Att. From Excel")
 
+# === Process File ===
 if uploaded_file:
     with st.spinner("⏳ Processing..."):
-        result_df, summary_df, leave_df = convert_attendance_excel(uploaded_file, shift_value, reason_value, explanation_value)
+        result_df, summary_df, leave_df = convert_attendance_excel(
+            uploaded_file, shift_value, reason_value, explanation_value, selected_month
+        )
 
         if result_df is not None and not result_df.empty:
             st.success(f"✅ File converted successfully with {len(result_df)} attendance records!")
@@ -139,7 +163,7 @@ if uploaded_file:
         else:
             st.warning("⚠️ No data to export. Please check your input file.")
 
-# === 📄 Sample Template ===
+# === 📄 Sample Template Download ===
 st.markdown("---")
 st.markdown("### 📄 Need a sample file?")
 
